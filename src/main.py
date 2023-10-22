@@ -16,6 +16,12 @@ SHARK_Y = rnd.randint(1,150)
 SPEED = 0.0
 SPEED_INCREASE = 0.0
 SCORE = 1
+try:
+    with open('record') as file:
+        record = file.readline().strip()
+        PREV_RECORD = int(record)
+except FileNotFoundError:
+    PREV_RECORD = 0
 
 screen = pg.display.set_mode(size=(WIDTH, HEIGHT))
 clock = pg.time.Clock()
@@ -77,9 +83,10 @@ class Submarine(pg.sprite.Sprite):
         self.rect.y += self.speed
         
 def render_score():
-    global score_text
+    global score_text, record_text
     score_font = pg.font.Font('./font/ARCADECLASSIC.TTF', 34)
     score_text = score_font.render(f'Score {SCORE//10}', False, 'Red')
+    record_text = score_font.render(f'RECORD {PREV_RECORD}', False, 'Yellow')
 
 submarine = Submarine(70, 50)
 shark = Shark(SHARK_X, SHARK_Y)
@@ -102,6 +109,9 @@ while True:
             submarine.speed = 0
         
     if pg.sprite.collide_rect(submarine, shark):
+        if SCORE//10 > PREV_RECORD:
+            with open('record', 'w') as file:
+                file.write(str(SCORE//10))
         exit()
     
     if pg.sprite.collide_rect(submarine, star):
@@ -119,6 +129,7 @@ while True:
     screen.blit(shark.image, shark.rect)
     screen.blit(star.image, star.rect)
     screen.blit(score_text, (0,0,))
+    screen.blit(record_text, (0,25,))
     
     SCORE += 1
     
